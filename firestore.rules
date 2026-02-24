@@ -22,11 +22,11 @@ service cloud.firestore {
       allow create, delete: if isAdmin();
       allow update: if 
         isAdmin() || 
-        (request.resource.data.currentRegistrations == resource.data.currentRegistrations + 1 &&
-          request.resource.data.id == resource.data.id &&
-          request.resource.data.location == resource.data.location &&
-          request.resource.data.date == resource.data.date &&
-          request.resource.data.maxQuota == resource.data.maxQuota);
+        (
+          // Allow non-admins to ONLY increment the registration count by 1
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRegistrations']) &&
+          request.resource.data.currentRegistrations == resource.data.currentRegistrations + 1
+        );
     }
 
     match /participants/{participantId} {
