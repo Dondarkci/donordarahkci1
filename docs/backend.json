@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's public profile information.",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "displayName": { "type": "string", "description": "The user's display name." }
+      },
+      "required": ["uid", "email"]
+    },
+    "BloodDonationEvent": {
+      "title": "Blood Donation Event",
+      "type": "object",
+      "description": "Defines a scheduled blood donation event.",
+      "properties": {
+        "id": { "type": "string" },
+        "location": { "type": "string", "description": "The venue of the event." },
+        "date": { "type": "string", "format": "date", "description": "The date of the event." },
+        "maxQuota": { "type": "number", "description": "The maximum number of participants." },
+        "currentRegistrations": { "type": "number", "description": "The current number of registered participants." }
+      },
+      "required": ["id", "location", "date", "maxQuota", "currentRegistrations"]
+    },
+    "Participant": {
+      "title": "Participant",
+      "type": "object",
+      "description": "Represents an individual registered for a blood donation event.",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "nik": { "type": "string", "description": "National Identity Number." },
+        "whatsappNumber": { "type": "string" },
+        "bloodDonationEventId": { "type": "string", "description": "ID of the event they registered for." },
+        "registrationDateTime": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string", "description": "The UID of the authenticated user who registered." }
+      },
+      "required": ["id", "fullName", "nik", "whatsappNumber", "bloodDonationEventId", "registrationDateTime", "userId"]
+    }
+  },
+  "auth": {
+    "providers": ["password", "anonymous"]
+  },
+  "firestore": {
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores admin user profiles. Existence of a doc here grants admin rights."
+    },
+    "/bloodDonationEvents/{eventId}": {
+      "schema": { "$ref": "#/entities/BloodDonationEvent" },
+      "description": "Collection of all blood donation events."
+    },
+    "/participants/{participantId}": {
+      "schema": { "$ref": "#/entities/Participant" },
+      "description": "Collection of all registered participants for events."
+    }
+  }
+}
