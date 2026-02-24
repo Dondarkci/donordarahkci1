@@ -35,9 +35,9 @@
         "whatsappNumber": { "type": "string" },
         "bloodDonationEventId": { "type": "string", "description": "ID of the event they registered for." },
         "registrationDateTime": { "type": "string", "format": "date-time" },
-        "userId": { "type": "string", "description": "The UID of the authenticated user who registered." }
+        "userId": { "type": "string", "description": "The UID of the authenticated user who registered. Optional." }
       },
-      "required": ["id", "fullName", "nik", "whatsappNumber", "bloodDonationEventId", "registrationDateTime", "userId"]
+      "required": ["id", "fullName", "nik", "whatsappNumber", "bloodDonationEventId", "registrationDateTime"]
     }
   },
   "auth": {

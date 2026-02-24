@@ -29,8 +29,6 @@ import {
 } from "@/components/ui/dialog";
 import { 
   useFirestore, 
-  useAuth, 
-  useUser, 
   useCollection, 
   useMemoFirebase
 } from "@/firebase";
@@ -42,7 +40,6 @@ import {
   query, 
   orderBy 
 } from "firebase/firestore";
-import { signInAnonymously } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -58,8 +55,6 @@ const formSchema = z.object({
 
 export function RegistrationForm() {
   const firestore = useFirestore();
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   
   const [isSuccess, setIsSuccess] = useState(false);
@@ -74,13 +69,6 @@ export function RegistrationForm() {
   }, [firestore]);
   
   const { data: events, isLoading: isEventsLoading, error: eventsError } = useCollection(eventsQuery);
-
-  // Initialize anonymous auth if not signed in
-  useEffect(() => {
-    if (auth && !user && !isUserLoading) {
-      signInAnonymously(auth).catch(err => console.error("Anonymous auth failed", err));
-    }
-  }, [auth, user, isUserLoading]);
 
   // Timeout for loading indicator
   useEffect(() => {
@@ -105,11 +93,11 @@ export function RegistrationForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore || !user) {
+    if (!firestore) {
       toast({
         variant: "destructive",
-        title: "Sesi Belum Siap",
-        description: "Autentikasi pengguna belum siap. Mohon tunggu sesaat dan coba lagi.",
+        title: "Koneksi Gagal",
+        description: "Tidak dapat terhubung ke server. Mohon coba lagi.",
       });
       return;
     };
@@ -146,7 +134,6 @@ export function RegistrationForm() {
           fullName: values.fullName,
           nik: values.ktpNumber,
           whatsappNumber: values.whatsappNumber,
-          userId: user.uid, 
           bloodDonationEventId: values.locationId,
           registrationDateTime: new Date().toISOString(),
           createdAt: serverTimestamp()
@@ -361,7 +348,7 @@ export function RegistrationForm() {
               <Button 
                 type="submit" 
                 className="w-full h-12 text-lg font-bold transition-transform active:scale-[0.98]"
-                disabled={isSubmitting || isUserLoading || !user}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
@@ -375,7 +362,6 @@ export function RegistrationForm() {
                   </div>
                 )}
               </Button>
-              { isUserLoading && <p className="text-xs text-center text-muted-foreground">Menyiapkan sesi pendaftaran...</p> }
             </CardContent>
           </Card>
         </form>

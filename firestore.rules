@@ -22,8 +22,7 @@ service cloud.firestore {
       allow create, delete: if isAdmin();
       allow update: if 
         isAdmin() || 
-        (isSignedIn() && 
-          request.resource.data.currentRegistrations == resource.data.currentRegistrations + 1 &&
+        (request.resource.data.currentRegistrations == resource.data.currentRegistrations + 1 &&
           request.resource.data.id == resource.data.id &&
           request.resource.data.location == resource.data.location &&
           request.resource.data.date == resource.data.date &&
@@ -31,7 +30,7 @@ service cloud.firestore {
     }
 
     match /participants/{participantId} {
-      allow create: if isSignedIn();
+      allow create: if true;
       allow get, list, update, delete: if isAdmin();
     }
   }
