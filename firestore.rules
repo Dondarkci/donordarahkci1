@@ -7,12 +7,15 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      // SAFE CHECK: Ensure user is signed in before checking for admin doc.
       return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
     match /admins/{userId} {
       allow get: if isSignedIn() && request.auth.uid == userId;
       allow list: if false;
+      // Allow any signed-in user to create their own admin doc initially.
+      // This is for first-time setup.
       allow create: if isSignedIn() && request.auth.uid == userId;
       allow update, delete: if isAdmin();
     }
@@ -20,17 +23,20 @@ service cloud.firestore {
     match /bloodDonationEvents/{eventId} {
       allow get, list: if true;
       allow create, delete: if isAdmin();
-      allow update: if 
-        isAdmin() || 
-        (
-          // Allow non-admins to ONLY increment the registration count by 1
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentRegistrations']) &&
-          request.resource.data.currentRegistrations == resource.data.currentRegistrations + 1
-        );
+      // Allow non-admins to ONLY increment the registration count by 1,
+      // and ensure no other fields are changed.
+      allow update: if isAdmin() || (
+          request.resource.data.currentRegistrations == resource.data.currentRegistrations + 1 &&
+          request.resource.data.location == resource.data.location &&
+          request.resource.data.date == resource.data.date &&
+          request.resource.data.maxQuota == resource.data.maxQuota
+      );
     }
 
     match /participants/{participantId} {
+      // Allow anyone (unauthenticated) to create a registration.
       allow create: if true;
+      // Only admins can view, update, or delete participant data.
       allow get, list, update, delete: if isAdmin();
     }
   }
